@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">考公助手</string>
+    <string name="notification_title">考公知识推送</string>
+    <string name="notification_desc">每日8:00-22:00，每2小时推送一次考公知识</string>
+</resources>

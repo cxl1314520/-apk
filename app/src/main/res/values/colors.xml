@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主色调：深蓝 -->
+    <color name="primary">#1565C0</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="secondary">#37474F</color>
+    <color name="accent">#E65100</color>
+
+    <!-- 背景 -->
+    <color name="bg_primary">#F5F7FA</color>
+    <color name="card_bg">#FFFFFF</color>
+
+    <!-- 文字 -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="white">#FFFFFF</color>
+    <color name="divider">#E0E0E0</color>
+
+    <!-- 分类颜色 -->
+    <color name="cat_chanshi">#1565C0</color>
+    <color name="cat_yanyu">#2E7D32</color>
+    <color name="cat_panduan">#6A1B9A</color>
+    <color name="cat_shuliang">#E65100</color>
+    <color name="cat_ziliao">#00695C</color>
+    <color name="cat_shenlun">#AD1457</color>
+
+    <!-- 提示背景 -->
+    <color name="tip_bg">#FFF3E0</color>
+    <color name="tip_border">#FF8F00</color>
+    <color name="tag_bg">#E3F2FD</color>
+    <color name="tag_text">#1565C0</color>
+</resources>
