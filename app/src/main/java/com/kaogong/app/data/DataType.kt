@@ -17,9 +17,5 @@ enum class DataType(
     WORD(
         "词语", "📝", "word.json",
         "https://raw.githubusercontent.com/pwxcoo/chinese-xinhua/master/data/word.json"
-    ),
-    CHARACTER(
-        "汉字", "🔤", "character.json",
-        "https://raw.githubusercontent.com/pwxcoo/chinese-xinhua/master/data/character.json"
     )
 }

@@ -14,7 +14,7 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val hour = intent.getIntExtra("hour", 8)
 
-        // 推送4种词汇，每种一条
+        // 推送3种词汇，每种一条（无需网络，本地文件）
         DataType.values().forEach { type ->
             ChineseDataRepository.getRandomItem(context, type)?.let {
                 NotificationHelper.showItemNotification(context, it)
@@ -24,12 +24,15 @@ class AlarmReceiver : BroadcastReceiver() {
         // 重新安排明天的闹钟
         AlarmScheduler.rescheduleForTomorrow(context, hour)
 
-        // 时政新闻需要网络，在后台线程获取
+        // 时政：从人民日报获取1-2条，后台网络请求
         val pending = goAsync()
         Thread {
             try {
-                NewsRepository.getRandomNews(context)?.let {
-                    NotificationHelper.showNewsNotification(context, it)
+                val newsItems = NewsRepository.getNewsItems(context, count = 2)
+                newsItems.forEachIndexed { index, news ->
+                    val notifId = if (index == 0) NewsRepository.NEWS_NOTIF_ID_1
+                                  else             NewsRepository.NEWS_NOTIF_ID_2
+                    NotificationHelper.showNewsNotification(context, news, notifId)
                 }
             } catch (_: Exception) {
             } finally {

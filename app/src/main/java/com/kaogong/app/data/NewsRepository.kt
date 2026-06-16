@@ -15,14 +15,15 @@ data class NewsItem(
 object NewsRepository {
 
     private const val PREF_NAME = "news_seen"
-    private const val NEWS_NOTIF_ID = 20
+    const val NEWS_NOTIF_ID_1 = 20
+    const val NEWS_NOTIF_ID_2 = 21
 
+    // 多个RSS源，依次尝试
     private val RSS_URLS = listOf(
-        "http://www.people.com.cn/rss/politics.xml",
+        "https://feedx.net/rss/peopledaily.xml",      // 人民日报 UTF-8 代理（最可靠）
+        "http://www.people.com.cn/rss/politics.xml",  // 人民日报官方
         "http://www.chinanews.com.cn/rss/scroll-news.xml"
     )
-
-    fun getNotifId() = NEWS_NOTIF_ID
 
     fun markAsSeen(context: Context, title: String) {
         context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -33,26 +34,42 @@ object NewsRepository {
         context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             .getBoolean(title.hashCode().toString(), false)
 
-    fun getRandomNews(context: Context): NewsItem? {
+    /** 返回最多 count 条未读新闻，全读过则重置后返回 */
+    fun getNewsItems(context: Context, count: Int = 2): List<NewsItem> {
         for (url in RSS_URLS) {
             try {
-                val item = fetchFirst(context, url)
-                if (item != null) return item
+                val items = fetchAll(url)
+                if (items.isEmpty()) continue
+
+                val unseen = items.filter { !isSeen(context, it.title) }
+                return if (unseen.isNotEmpty()) {
+                    unseen.shuffled().take(count)
+                } else {
+                    // 全部已读，重置后重取
+                    context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                        .edit().clear().apply()
+                    items.shuffled().take(count)
+                }
             } catch (_: Exception) { }
         }
-        return null
+        return emptyList()
     }
 
-    private fun fetchFirst(context: Context, rssUrl: String): NewsItem? {
+    /** 返回 1 条（兼容旧接口） */
+    fun getRandomNews(context: Context): NewsItem? =
+        getNewsItems(context, 1).firstOrNull()
+
+    private fun fetchAll(rssUrl: String): List<NewsItem> {
         val conn = URL(rssUrl).openConnection() as HttpURLConnection
-        conn.connectTimeout = 5_000
-        conn.readTimeout = 8_000
+        conn.connectTimeout = 8_000
+        conn.readTimeout = 12_000
         conn.setRequestProperty("User-Agent", "Mozilla/5.0")
-        if (conn.responseCode != 200) { conn.disconnect(); return null }
+        if (conn.responseCode != 200) { conn.disconnect(); return emptyList() }
 
         val all = mutableListOf<NewsItem>()
         val parser: XmlPullParser = Xml.newPullParser()
-        parser.setInput(conn.inputStream, null) // null → detect encoding from XML declaration
+        // null → 从 XML 声明自动检测编码（支持 GBK/UTF-8）
+        parser.setInput(conn.inputStream, null)
 
         var inItem = false
         var tag = ""
@@ -80,7 +97,9 @@ object NewsRepository {
                         if (t.isNotEmpty()) {
                             all.add(NewsItem(
                                 title = t,
-                                description = descBuf.toString().trim().take(200),
+                                description = descBuf.toString().trim()
+                                    .replace(Regex("<[^>]+>"), "")  // 去掉 HTML 标签
+                                    .take(300),
                                 link = linkBuf.toString().trim()
                             ))
                         }
@@ -92,13 +111,6 @@ object NewsRepository {
             event = parser.next()
         }
         conn.disconnect()
-
-        val unseen = all.filter { !isSeen(context, it.title) }
-        if (unseen.isEmpty() && all.isNotEmpty()) {
-            // All seen — reset and re-use
-            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit().clear().apply()
-            return all.shuffled().firstOrNull()
-        }
-        return unseen.shuffled().firstOrNull()
+        return all
     }
 }
