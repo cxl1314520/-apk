@@ -5,9 +5,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.core.app.NotificationCompat
-import com.kaogong.app.KnowledgeDetailActivity
+import com.kaogong.app.PushPopupActivity
 import com.kaogong.app.R
 import com.kaogong.app.data.NewsItem
 import com.kaogong.app.data.NewsRepository
@@ -27,21 +26,25 @@ object NotificationHelper {
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
     }
 
+    /**
+     * 推送词汇通知。
+     * setFullScreenIntent → 锁屏/熄屏直接全屏弹起 PushPopupActivity；
+     * 亮屏后台则显示悬浮横幅，用户点击同样进入全屏页面。
+     */
     fun showItemNotification(context: Context, item: ChineseItem) {
         val notifId = item.type.ordinal + 10
 
-        // 全屏弹窗 Intent（锁屏时直接弹起详情页，解锁时作为横幅展示）
-        val detailIntent = Intent(context, KnowledgeDetailActivity::class.java).apply {
-            putExtra(KnowledgeDetailActivity.EXTRA_TYPE, item.type.ordinal)
-            putExtra(KnowledgeDetailActivity.EXTRA_KEY, item.key)
+        val popupIntent = Intent(context, PushPopupActivity::class.java).apply {
+            putExtra(PushPopupActivity.EXTRA_MODE, PushPopupActivity.MODE_KNOWLEDGE)
+            putExtra(PushPopupActivity.EXTRA_TYPE, item.type.ordinal)
+            putExtra(PushPopupActivity.EXTRA_KEY, item.key)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val fullScreenPi = PendingIntent.getActivity(
-            context, notifId, detailIntent,
+            context, notifId, popupIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // "已知" 按钮
         val exIntent = Intent(context, ExcludeActionReceiver::class.java).apply {
             putExtra(ExcludeActionReceiver.EXTRA_TYPE_ORDINAL, item.type.ordinal)
             putExtra(ExcludeActionReceiver.EXTRA_ITEM_KEY, item.key)
@@ -67,7 +70,7 @@ object NotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
-            .setFullScreenIntent(fullScreenPi, true)   // ← 直接弹出界面
+            .setFullScreenIntent(fullScreenPi, true)
             .setVibrate(longArrayOf(0, 300, 100, 300))
             .addAction(R.drawable.ic_notification, "✓ 已知", exPi)
             .build()
@@ -76,16 +79,15 @@ object NotificationHelper {
     }
 
     fun showNewsNotification(context: Context, news: NewsItem, notifId: Int) {
-        // 全屏弹窗 → 在 KnowledgeDetailActivity 以 TYPE_NEWS 模式展示
-        val detailIntent = Intent(context, KnowledgeDetailActivity::class.java).apply {
-            putExtra(KnowledgeDetailActivity.EXTRA_TYPE, KnowledgeDetailActivity.TYPE_NEWS)
-            putExtra(KnowledgeDetailActivity.EXTRA_NEWS_TITLE, news.title)
-            putExtra(KnowledgeDetailActivity.EXTRA_NEWS_DESC, news.description)
-            putExtra(KnowledgeDetailActivity.EXTRA_NEWS_LINK, news.link)
+        val popupIntent = Intent(context, PushPopupActivity::class.java).apply {
+            putExtra(PushPopupActivity.EXTRA_MODE, PushPopupActivity.MODE_NEWS)
+            putExtra(PushPopupActivity.EXTRA_NEWS_TITLE, news.title)
+            putExtra(PushPopupActivity.EXTRA_NEWS_DESC, news.description)
+            putExtra(PushPopupActivity.EXTRA_NEWS_LINK, news.link)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val fullScreenPi = PendingIntent.getActivity(
-            context, notifId, detailIntent,
+            context, notifId, popupIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -108,7 +110,7 @@ object NotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
-            .setFullScreenIntent(fullScreenPi, true)   // ← 直接弹出界面
+            .setFullScreenIntent(fullScreenPi, true)
             .setVibrate(longArrayOf(0, 300, 100, 300))
             .addAction(R.drawable.ic_notification, "✓ 已知", exPi)
             .build()

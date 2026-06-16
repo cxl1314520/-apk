@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.chip.Chip
+import android.content.Intent
 import com.kaogong.app.data.ChineseDataRepository
 import com.kaogong.app.data.DataDownloader
 import com.kaogong.app.data.DataType
@@ -141,12 +142,19 @@ class MainActivity : AppCompatActivity() {
         triggerImmediatePush()
     }
 
-    /** 打开App时立即推送一次（3种词汇 + 1-2条时政） */
+    /** 打开App时立即推送一次（直接弹出全屏界面 + 通知兜底） */
     private fun triggerImmediatePush() {
         DataType.values().forEach { type ->
-            ChineseDataRepository.getRandomItem(this, type)?.let {
-                NotificationHelper.showItemNotification(this, it)
-            }
+            val item = ChineseDataRepository.getRandomItem(this, type) ?: return@forEach
+            // 直接弹出全屏弹窗
+            startActivity(Intent(this, PushPopupActivity::class.java).apply {
+                putExtra(PushPopupActivity.EXTRA_MODE, PushPopupActivity.MODE_KNOWLEDGE)
+                putExtra(PushPopupActivity.EXTRA_TYPE, type.ordinal)
+                putExtra(PushPopupActivity.EXTRA_KEY, item.key)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            })
+            // 同时发通知（锁屏/后台兜底）
+            NotificationHelper.showItemNotification(this, item)
         }
         Thread {
             try {
@@ -154,6 +162,13 @@ class MainActivity : AppCompatActivity() {
                 newsItems.forEachIndexed { index, news ->
                     val notifId = if (index == 0) NewsRepository.NEWS_NOTIF_ID_1
                                   else             NewsRepository.NEWS_NOTIF_ID_2
+                    startActivity(Intent(this, PushPopupActivity::class.java).apply {
+                        putExtra(PushPopupActivity.EXTRA_MODE, PushPopupActivity.MODE_NEWS)
+                        putExtra(PushPopupActivity.EXTRA_NEWS_TITLE, news.title)
+                        putExtra(PushPopupActivity.EXTRA_NEWS_DESC, news.description)
+                        putExtra(PushPopupActivity.EXTRA_NEWS_LINK, news.link)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    })
                     NotificationHelper.showNewsNotification(this, news, notifId)
                 }
             } catch (_: Exception) { }

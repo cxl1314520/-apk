@@ -46,10 +46,9 @@ object ChineseDataRepository {
     }
 
     private fun parseItem(reader: JsonReader, type: DataType): ChineseItem? = when (type) {
-        DataType.IDIOM      -> parseIdiom(reader)
-        DataType.XIEHOUYU  -> parseXiehouyu(reader)
-        DataType.WORD       -> parseWord(reader)
-        DataType.CHARACTER  -> parseCharacter(reader)
+        DataType.IDIOM     -> parseIdiom(reader)
+        DataType.XIEHOUYU -> parseXiehouyu(reader)
+        DataType.WORD      -> parseWord(reader)
     }
 
     private fun parseIdiom(reader: JsonReader): ChineseItem? {
@@ -96,21 +95,5 @@ object ChineseDataRepository {
         reader.endObject()
         if (word.isEmpty()) return null
         return ChineseItem(DataType.WORD, word, word, "词语", explanation.ifEmpty { "暂无释义" }, "")
-    }
-
-    private fun parseCharacter(reader: JsonReader): ChineseItem? {
-        var char = ""; var pinyin = ""; var definition = ""; var radical = ""
-        reader.beginObject()
-        while (reader.hasNext()) when (reader.nextName()) {
-            "character"  -> char       = reader.nextString()
-            "pinyin"     -> pinyin     = reader.nextString()
-            "definition" -> definition = reader.nextString()
-            "radical"    -> radical    = reader.nextString()
-            else         -> reader.skipValue()
-        }
-        reader.endObject()
-        if (char.isEmpty()) return null
-        val extra = if (radical.isNotEmpty()) "【部首】$radical" else ""
-        return ChineseItem(DataType.CHARACTER, char, char, pinyin, definition.ifEmpty { "暂无释义" }, extra)
     }
 }

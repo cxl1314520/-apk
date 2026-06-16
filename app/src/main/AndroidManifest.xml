@@ -36,8 +36,16 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:showOnLockScreen="true"
-            android:excludeFromRecents="true"
             android:turnScreenOn="true" />
+
+        <!-- 推送全屏弹窗：无论锁屏/亮屏/后台都直接弹出 -->
+        <activity
+            android:name=".PushPopupActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true" />
 
         <receiver
             android:name=".receiver.AlarmReceiver"
