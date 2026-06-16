@@ -126,22 +126,22 @@
                 android:layout_marginBottom="24dp"
                 android:visibility="gone" />
 
-            <!-- 是否重新加入推送 -->
+            <!-- 是否已知 -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnExclude"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:text="不再推送"
+                android:text="已知"
                 android:textSize="16sp"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                app:strokeColor="@color/secondary"
+                app:strokeColor="@color/primary"
                 app:strokeWidth="1.5dp"
-                android:textColor="@color/secondary" />
+                android:textColor="@color/primary" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="选择「不再推送」后，此条目将不再出现在随机推送中\n点击「重新加入推送」可恢复"
+                android:text="点击「已知」后此条目不再随机推送\n点击「重新加入」可恢复"
                 android:textSize="12sp"
                 android:textColor="@color/text_secondary"
                 android:gravity="center"

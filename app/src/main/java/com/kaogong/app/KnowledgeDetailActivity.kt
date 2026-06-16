@@ -43,12 +43,12 @@ class KnowledgeDetailActivity : AppCompatActivity() {
             val it = currentItem ?: return@setOnClickListener
             if (ExclusionManager.isExcluded(this, it)) {
                 ExclusionManager.include(this, it)
-                binding.btnExclude.text = "不再推送"
+                binding.btnExclude.text = "已知"
                 Toast.makeText(this, "「${it.title}」已重新加入推送", Toast.LENGTH_SHORT).show()
             } else {
                 ExclusionManager.exclude(this, it)
-                binding.btnExclude.text = "重新加入推送"
-                Toast.makeText(this, "「${it.title}」已从推送列表移除", Toast.LENGTH_SHORT).show()
+                binding.btnExclude.text = "重新加入"
+                Toast.makeText(this, "「${it.title}」已标记为已知", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -64,7 +64,7 @@ class KnowledgeDetailActivity : AppCompatActivity() {
             tvExtra.visibility = if (item.extra.isNotEmpty()) View.VISIBLE else View.GONE
             tvExtra.text = item.extra
             btnExclude.text = if (ExclusionManager.isExcluded(
-                    this@KnowledgeDetailActivity, item)) "重新加入推送" else "不再推送"
+                    this@KnowledgeDetailActivity, item)) "重新加入" else "已知"
         }
     }
 

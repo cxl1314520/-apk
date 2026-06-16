@@ -205,13 +205,12 @@
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:text="不再推送"
+                    android:text="已知"
                     android:textSize="14sp"
                     android:layout_marginEnd="8dp"
-                    app:backgroundTint="@color/secondary"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    app:strokeColor="@color/secondary"
-                    android:textColor="@color/secondary" />
+                    app:strokeColor="@color/primary"
+                    android:textColor="@color/primary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnNext"

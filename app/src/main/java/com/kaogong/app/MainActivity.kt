@@ -14,6 +14,7 @@ import com.kaogong.app.data.ChineseDataRepository
 import com.kaogong.app.data.DataDownloader
 import com.kaogong.app.data.DataType
 import com.kaogong.app.data.ExclusionManager
+import com.kaogong.app.data.NewsRepository
 import com.kaogong.app.data.model.ChineseItem
 import com.kaogong.app.databinding.ActivityMainBinding
 import com.kaogong.app.notification.NotificationHelper
@@ -60,12 +61,12 @@ class MainActivity : AppCompatActivity() {
             val item = currentItem ?: return@setOnClickListener
             if (ExclusionManager.isExcluded(this, item)) {
                 ExclusionManager.include(this, item)
-                binding.btnExclude.text = "不再推送"
+                binding.btnExclude.text = "已知"
                 Toast.makeText(this, "「${item.title}」已重新加入推送", Toast.LENGTH_SHORT).show()
             } else {
                 ExclusionManager.exclude(this, item)
-                binding.btnExclude.text = "重新加入推送"
-                Toast.makeText(this, "「${item.title}」已屏蔽，自动换下一条", Toast.LENGTH_SHORT).show()
+                binding.btnExclude.text = "重新加入"
+                Toast.makeText(this, "「${item.title}」已标记为已知，自动换下一条", Toast.LENGTH_SHORT).show()
                 refreshItem()
             }
         }
@@ -98,9 +99,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             runOnUiThread {
-                if (anyFailed) {
-                    binding.btnRetryDownload.visibility = View.VISIBLE
-                }
+                if (anyFailed) binding.btnRetryDownload.visibility = View.VISIBLE
                 showContent()
             }
         }.start()
@@ -110,6 +109,23 @@ class MainActivity : AppCompatActivity() {
         binding.layoutDownloading.visibility = View.GONE
         binding.layoutContent.visibility = View.VISIBLE
         refreshItem()
+        triggerImmediatePush()
+    }
+
+    /** 打开App时立即推送一次（4种词汇 + 时政） */
+    private fun triggerImmediatePush() {
+        DataType.values().forEach { type ->
+            ChineseDataRepository.getRandomItem(this, type)?.let {
+                NotificationHelper.showItemNotification(this, it)
+            }
+        }
+        Thread {
+            try {
+                NewsRepository.getRandomNews(this)?.let {
+                    NotificationHelper.showNewsNotification(this, it)
+                }
+            } catch (_: Exception) { }
+        }.start()
     }
 
     private fun refreshItem() {
@@ -118,7 +134,7 @@ class MainActivity : AppCompatActivity() {
             binding.tvNoData.visibility = View.VISIBLE
             binding.cardContent.visibility = View.GONE
             val hasFile = DataDownloader.isDownloaded(this, currentType)
-            binding.tvNoData.text = if (!hasFile) "数据未下载，请检查网络连接" else "该分类所有内容均已屏蔽\n可点击「不再推送」按钮重新加入"
+            binding.tvNoData.text = if (!hasFile) "数据未下载，请检查网络连接" else "该分类所有内容均已标记为已知\n可点击「重新加入」按钮恢复"
             return
         }
         binding.tvNoData.visibility = View.GONE
@@ -133,7 +149,7 @@ class MainActivity : AppCompatActivity() {
             tvExtra.visibility = if (item.extra.isNotEmpty()) View.VISIBLE else View.GONE
             tvExtra.text   = item.extra
             btnExclude.text = if (ExclusionManager.isExcluded(this@MainActivity, item))
-                "重新加入推送" else "不再推送"
+                "重新加入" else "已知"
         }
     }
 
