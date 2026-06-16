@@ -1,25 +1,29 @@
 #!/bin/sh
-# Gradle wrapper script for Unix
+# Self-bootstrapping Gradle wrapper (no gradle-wrapper.jar needed)
+set -e
 
-APP_NAME="Gradle"
-APP_BASE_NAME=`basename "$0"`
+APP_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROPS="$APP_DIR/gradle/wrapper/gradle-wrapper.properties"
 
-# Resolve links: $0 may be a link
-PRG="$0"
-while [ -h "$PRG" ] ; do
-    ls=`ls -ld "$PRG"`
-    link=`expr "$ls" : '.*-> \(.*\)$'`
-    if expr "$link" : '/.*' > /dev/null; then
-        PRG="$link"
+# Parse distribution URL (unescape \: → :)
+DIST_URL="$(grep '^distributionUrl=' "$PROPS" | cut -d= -f2- | tr -d '\r' | sed 's/\\//g')"
+GRADLE_VER="$(echo "$DIST_URL" | sed 's/.*gradle-\(.*\)-bin\.zip/\1/')"
+
+GRADLE_CACHE="${GRADLE_USER_HOME:-$HOME/.gradle}/wrapper/dists/gradle-${GRADLE_VER}-bin"
+GRADLE_BIN="$GRADLE_CACHE/gradle-${GRADLE_VER}/bin/gradle"
+
+if [ ! -f "$GRADLE_BIN" ]; then
+    echo ">> Downloading Gradle $GRADLE_VER ..."
+    mkdir -p "$GRADLE_CACHE"
+    TMP="/tmp/gradle-${GRADLE_VER}.zip"
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL "$DIST_URL" -o "$TMP"
     else
-        PRG=`dirname "$PRG"`"/$link"
+        wget -q "$DIST_URL" -O "$TMP"
     fi
-done
-SAVED="`pwd`"
-cd "`dirname \"$PRG\"`/" >/dev/null
-APP_HOME="`pwd -P`"
-cd "$SAVED" >/dev/null
+    unzip -q "$TMP" -d "$GRADLE_CACHE"
+    rm -f "$TMP"
+    echo ">> Gradle $GRADLE_VER ready."
+fi
 
-CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
-
-exec "$JAVACMD" "$@" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
+exec "$GRADLE_BIN" "$@"
