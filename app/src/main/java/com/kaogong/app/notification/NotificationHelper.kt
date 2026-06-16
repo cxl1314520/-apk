@@ -8,50 +8,66 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.kaogong.app.KnowledgeDetailActivity
 import com.kaogong.app.R
-import com.kaogong.app.data.KnowledgeItem
+import com.kaogong.app.data.model.ChineseItem
+import com.kaogong.app.receiver.ExcludeActionReceiver
 
 object NotificationHelper {
 
-    private const val CHANNEL_ID = "kaogong_knowledge"
-    private const val CHANNEL_NAME = "考公知识推送"
+    private const val CHANNEL_ID   = "kaogong_chinese"
+    private const val CHANNEL_NAME = "每日词汇推送"
 
     fun createNotificationChannel(context: Context) {
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = "每日考公知识推送，早8点至晚10点每2小时推送一次"
+        val ch = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "推送成语、歇后语、词语、汉字等内容"
             enableVibration(true)
         }
-        val manager = context.getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
+        context.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
     }
 
-    fun showKnowledgeNotification(context: Context, item: KnowledgeItem) {
-        val intent = Intent(context, KnowledgeDetailActivity::class.java).apply {
-            putExtra("knowledge_id", item.id)
+    fun showItemNotification(context: Context, item: ChineseItem) {
+        // Notification ID unique per type (stable – only latest per type is shown)
+        val notifId = item.type.ordinal + 10
+
+        // Tap → open detail
+        val tapIntent = Intent(context, KnowledgeDetailActivity::class.java).apply {
+            putExtra(KnowledgeDetailActivity.EXTRA_TYPE, item.type.ordinal)
+            putExtra(KnowledgeDetailActivity.EXTRA_KEY, item.key)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
-        val pendingIntent = PendingIntent.getActivity(
-            context, item.id, intent,
+        val tapPi = PendingIntent.getActivity(
+            context, notifId, tapIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        // Action: "不再推送"
+        val exIntent = Intent(context, ExcludeActionReceiver::class.java).apply {
+            putExtra(ExcludeActionReceiver.EXTRA_TYPE_ORDINAL, item.type.ordinal)
+            putExtra(ExcludeActionReceiver.EXTRA_ITEM_KEY, item.key)
+            putExtra(ExcludeActionReceiver.EXTRA_NOTIF_ID, notifId)
+        }
+        val exPi = PendingIntent.getBroadcast(
+            context, notifId + 100, exIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val bigText = buildString {
+            if (item.subtitle.isNotEmpty()) appendLine("[${item.subtitle}]")
+            append(item.content)
+            if (item.extra.isNotEmpty()) { appendLine(); append(item.extra) }
+        }
+
+        val notif = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("📚 ${item.category}·每日一练")
-            .setContentText(item.title)
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText(item.content.take(200))
-                .setBigContentTitle("📚 ${item.category} | ${item.title}"))
+            .setContentTitle("${item.type.emoji} ${item.type.displayName}｜${item.title}")
+            .setContentText(item.content.take(60))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(tapPi)
             .setVibrate(longArrayOf(0, 300, 100, 300))
+            .addAction(R.drawable.ic_notification, "不再推送", exPi)
             .build()
 
-        val manager = context.getSystemService(NotificationManager::class.java)
-        manager.notify(item.id, notification)
+        context.getSystemService(NotificationManager::class.java).notify(notifId, notif)
     }
 }

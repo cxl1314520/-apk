@@ -6,13 +6,13 @@
     android:orientation="vertical"
     android:background="@color/bg_primary">
 
-    <!-- 顶部导航 -->
+    <!-- 顶栏 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
+        android:paddingHorizontal="8dp"
         android:background="@color/primary">
 
         <com.google.android.material.button.MaterialButton
@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:text="← 返回"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="13sp"
             app:backgroundTint="@android:color/transparent"
             app:strokeColor="@color/white"
             app:strokeWidth="1dp" />
@@ -30,8 +30,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="知识详情"
-            android:textSize="18sp"
+            android:text="词条详情"
+            android:textSize="17sp"
             android:textStyle="bold"
             android:textColor="@color/white"
             android:gravity="center" />
@@ -42,13 +42,13 @@
             android:layout_height="wrap_content"
             android:text="下一条 →"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="13sp"
             app:backgroundTint="@android:color/transparent"
             app:strokeColor="@color/white"
             app:strokeWidth="1dp" />
     </LinearLayout>
 
-    <!-- 内容区域 -->
+    <!-- 内容 -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -60,12 +60,12 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- 分类标签 -->
+            <!-- 类型标签 -->
             <TextView
-                android:id="@+id/tvCategory"
+                android:id="@+id/tvType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="常识判断"
+                android:text="📖 成语"
                 android:textSize="13sp"
                 android:textColor="@color/white"
                 android:background="@drawable/bg_category"
@@ -73,47 +73,80 @@
                 android:paddingVertical="4dp"
                 android:layout_marginBottom="16dp" />
 
-            <!-- 标题 -->
+            <!-- 主词条 -->
             <TextView
                 android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="知识标题"
-                android:textSize="22sp"
+                android:text="词条"
+                android:textSize="30sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="6dp" />
 
-            <!-- 分割线 -->
+            <!-- 拼音 -->
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="15sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone" />
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:background="@color/primary"
                 android:layout_marginBottom="16dp" />
 
-            <!-- 内容 -->
+            <!-- 释义/答案 -->
             <TextView
                 android:id="@+id/tvContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="知识内容"
-                android:textSize="16sp"
+                android:text="释义"
+                android:textSize="17sp"
                 android:textColor="@color/text_primary"
                 android:lineSpacingMultiplier="1.8"
-                android:layout_marginBottom="20dp" />
+                android:layout_marginBottom="16dp" />
 
-            <!-- 提示 -->
+            <!-- 例句/出处/附加信息 -->
             <TextView
-                android:id="@+id/tvTip"
+                android:id="@+id/tvExtra"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="15sp"
-                android:textColor="@color/accent"
+                android:textSize="14sp"
+                android:textColor="#795548"
                 android:background="@drawable/bg_tip"
                 android:padding="16dp"
                 android:lineSpacingMultiplier="1.6"
+                android:layout_marginBottom="24dp"
                 android:visibility="gone" />
+
+            <!-- 是否重新加入推送 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnExclude"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="不再推送"
+                android:textSize="16sp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:strokeColor="@color/secondary"
+                app:strokeWidth="1.5dp"
+                android:textColor="@color/secondary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="选择「不再推送」后，此条目将不再出现在随机推送中\n点击「重新加入推送」可恢复"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:lineSpacingMultiplier="1.4" />
 
         </LinearLayout>
     </ScrollView>
